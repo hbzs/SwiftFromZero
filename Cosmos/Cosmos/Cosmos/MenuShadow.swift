@@ -19,7 +19,7 @@
 
 import UIKit
 
-public class MenuShadow : CanvasController {
-    public override func setup() {
+open class MenuShadow : CanvasController {
+    open override func setup() {
     }
 }

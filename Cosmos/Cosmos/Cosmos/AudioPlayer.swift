@@ -37,7 +37,7 @@ import AVFoundation
 ///  Seek to a particular point in a sound file, which supports such application features as fast forward and rewind
 ///
 ///  Obtain data you can use for playback-level metering
-public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
+open class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     internal var player: AVAudioPlayer!
 
     var filename: String!
@@ -56,12 +56,12 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
 
         super.init()
 
-        guard let url = NSBundle.mainBundle().URLForResource(name, withExtension:nil) else {
+        guard let url = Bundle.main.url(forResource: name, withExtension:nil) else {
             print("Could not retrieve url for \(name)")
             return nil
         }
 
-        guard let player = try? AVAudioPlayer(contentsOfURL: url) else {
+        guard let player = try? AVAudioPlayer(contentsOf: url) else {
             print("Could not create player from contents of : \(url)")
             return nil
         }
@@ -76,14 +76,14 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     }
 
     /// Plays a sound asynchronously.
-    public func play() {
+    open func play() {
         player.play()
     }
 
     /// Pauses playback; sound remains ready to resume playback from where it left off.
     /// Calling pause leaves the audio player prepared to play; it does not release the audio hardware that was acquired upon
     /// calling play or prepareToPlay.
-    public func pause() {
+    open func pause() {
         player.pause()
     }
 
@@ -92,28 +92,28 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     /// prepareToPlay methods.
     /// The stop method does not reset the value of the currentTime property to 0. In other words, if you call stop during
     /// playback and then call play, playback resumes at the point where it left off.
-    public func stop() {
+    open func stop() {
         player.stop()
     }
 
     /// Returns the total duration, in seconds, of the sound associated with the audio player. (read-only)
-    public var duration: Double {
+    open var duration: Double {
         get {
             return Double(player.duration)
         }
     }
 
     /// Returns true if the receiver's current playback rate > 0. Otherwise returns false.
-    public var playing: Bool {
+    open var playing: Bool {
         get {
-            return player.playing
+            return player.isPlaying
         }
     }
 
     /// The audio player’s stereo pan position.
     /// By setting this property you can position a sound in the stereo field. A value of –1.0 is full left, 0.0 is center, and
     /// 1.0 is full right.
-    public var pan: Double {
+    open var pan: Double {
         get {
             return Double(player.pan)
         } set(val) {
@@ -126,7 +126,7 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     /// Use this property to control an audio player’s volume relative to other audio output.
     /// To provide UI in iOS for adjusting system audio playback volume, use the MPVolumeView class, which provides media
     /// playback controls that users expect and whose appearance you can customize.
-    public var volume: Double {
+    open var volume: Double {
         get {
             return Double(player.volume)
         } set(val) {
@@ -140,11 +140,11 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     /// method, measured in seconds from the start of the sound.
     /// By setting this property you can seek to a specific point in a sound file or implement audio fast-forward and rewind
     /// functions.
-    public var currentTime: Double {
+    open var currentTime: Double {
         get {
             return player.currentTime
         } set(val) {
-            player.currentTime = NSTimeInterval(val)
+            player.currentTime = TimeInterval(val)
         }
     }
 
@@ -159,7 +159,7 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     /// ap.rate = 0.5
     /// ap.play()
     /// ````
-    public var rate: Double {
+    open var rate: Double {
         get {
             return Double(player.rate)
         } set(val) {
@@ -172,7 +172,7 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     /// times to return to the start and play again. For example, specifying a value of 1 results in a total of two plays of the
     /// sound. Set any negative integer value to loop the sound indefinitely until you call the stop method.
     /// Defaults to 1000000.
-    public var loops: Bool {
+    open var loops: Bool {
         get {
             return player.numberOfLoops > 0 ? true : false
         }
@@ -192,18 +192,18 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     /// let ap = AudioPlayer("audioTrackFileName")
     /// ap.meteringEnabled = true
     /// ````
-    public var meteringEnabled: Bool {
+    open var meteringEnabled: Bool {
         get {
-            return player.meteringEnabled
+            return player.isMeteringEnabled
         } set(v) {
-            player.meteringEnabled = v
+            player.isMeteringEnabled = v
         }
     }
 
     /// A Boolean value that specifies whether playback rate adjustment is enabled for an audio player.
     /// To enable adjustable playback rate for an audio player, set this property to true after you initialize the player and before you call the prepareToPlay
     /// instance method for the player.
-    public var enableRate: Bool {
+    open var enableRate: Bool {
         get {
             return player.enableRate
         } set(v) {
@@ -225,7 +225,7 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     ///     ap.updateMeters()
     /// }
     /// ````
-    public func updateMeters() {
+    open func updateMeters() {
         player.updateMeters()
     }
 
@@ -237,8 +237,8 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     /// ````
     /// - parameter channel: The audio channel whose average power value you want to obtain.
     /// - returns: A floating-point representation, in decibels, of a given audio channel’s current average power.
-    public func averagePower(channel: Int) -> Double {
-        return Double(player.averagePowerForChannel(channel))
+    open func averagePower(_ channel: Int) -> Double {
+        return Double(player.averagePower(forChannel: channel))
     }
 
     /// Returns the peak power for a given channel, in decibels, for the sound being played.
@@ -248,7 +248,7 @@ public class AudioPlayer: NSObject, AVAudioPlayerDelegate {
     /// }
     /// - parameter channel: The audio channel whose peak power value you want to obtain.
     /// - returns: A floating-point representation, in decibels, of a given audio channel’s current peak power.
-    public func peakPower(channel: Int) -> Double {
-        return Double(player.peakPowerForChannel(channel))
+    open func peakPower(_ channel: Int) -> Double {
+        return Double(player.peakPower(forChannel: channel))
     }
 }

@@ -24,26 +24,26 @@ extension Image {
     ///  Applies a generator to the receiver's contents.
     ///
     ///  - parameter generator: a Generator
-    public func generate(generator: Generator) {
+    public func generate(_ generator: Generator) {
         let crop = CIFilter(name: "CICrop")!
         crop.setDefaults()
-        crop.setValue(CIVector(CGRect:CGRect(self.bounds)), forKey: "inputRectangle")
+        crop.setValue(CIVector(cgRect:CGRect(self.bounds)), forKey: "inputRectangle")
         let generatorFilter = generator.createCoreImageFilter()
         crop.setValue(generatorFilter.outputImage, forKey: "inputImage")
 
         if var outputImage = crop.outputImage {
-            let scale = CGAffineTransformMakeScale(1, -1)
-            let translate = CGAffineTransformTranslate(scale, 0, outputImage.extent.size.height)
-            outputImage = outputImage.imageByApplyingTransform(translate)
+            let scale = CGAffineTransform(scaleX: 1, y: -1)
+            let translate = scale.translatedBy(x: 0, y: outputImage.extent.size.height)
+            outputImage = outputImage.applying(translate)
             self.output = outputImage
 
-            let img = UIImage(CIImage: output)
+            let img = UIImage(ciImage: output)
             let orig = self.origin
             self.view = UIImageView(image: img)
             self.origin = orig
             _originalSize = Size(view.frame.size)
         } else {
-            print("Failed to generate outputImage: \(__FUNCTION__)")
+            print("Failed to generate outputImage: \(#function)")
         }
     }
 }

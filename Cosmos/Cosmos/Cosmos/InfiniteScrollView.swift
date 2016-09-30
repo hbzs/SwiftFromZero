@@ -20,8 +20,8 @@
 import UIKit
 import Foundation
 
-public class InfiniteScrollView: UIScrollView {
-    public override func layoutSubviews() {
+open class InfiniteScrollView: UIScrollView {
+    open override func layoutSubviews() {
         super.layoutSubviews()
     }
 }

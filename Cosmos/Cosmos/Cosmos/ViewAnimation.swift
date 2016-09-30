@@ -48,16 +48,16 @@ public struct Spring {
 }
 
 /// ViewAnimation is a concrete subclass of Animation whose execution blocks affect properties of view-based objects.
-public class ViewAnimation: Animation {
+open class ViewAnimation: Animation {
     /// An optional Spring structure.
     /// If this value is non-nil, property animations will default to CASpringAnimation if they are able.
-    public var spring: Spring?
+    open var spring: Spring?
 
     /// The amount of time to way before executing the animation.
-    public var delay: NSTimeInterval = 0
+    open var delay: TimeInterval = 0
 
     /// A block animations to execute.
-    public var animations: () -> Void
+    open var animations: () -> Void
 
     ///  Initializes an animation object with a block of animtinos to execute.
     ///
@@ -66,7 +66,7 @@ public class ViewAnimation: Animation {
     ///  }
     ///
     ///  - parameter animations: a block of animations to execute.
-    public init(_ animations: () -> Void) {
+    public init(_ animations: @escaping () -> Void) {
         self.animations = animations
     }
 
@@ -85,56 +85,56 @@ public class ViewAnimation: Animation {
     ///
     /// - parameter duration: The length of the animations, measured in seconds.
     /// - parameter animations: A block containing a variety of animations to execute
-    public convenience init(duration: NSTimeInterval, animations: () -> Void) {
+    public convenience init(duration: TimeInterval, animations: @escaping () -> Void) {
         self.init(animations)
         self.duration = duration
     }
 
     /// This timingFunction represents one segment of a function that defines the pacing of an animation as a timing curve. The function maps an input time normalized to the range [0,1] to an output time also in the range [0,1].
     /// Options are `Linear`, `EaseOut`, `EaseIn`, `EaseInOut`
-    public var timingFunction: CAMediaTimingFunction {
+    open var timingFunction: CAMediaTimingFunction {
         switch curve {
-        case .Linear:
+        case .linear:
             return CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
-        case .EaseOut:
+        case .easeOut:
             return CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
-        case .EaseIn:
+        case .easeIn:
             return CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
-        case .EaseInOut:
+        case .easeInOut:
             return CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
         }
     }
 
     ///Options for animating views using block objects.
-    public var options: UIViewAnimationOptions {
-        var options: UIViewAnimationOptions = [UIViewAnimationOptions.BeginFromCurrentState]
+    open var options: UIViewAnimationOptions {
+        var options: UIViewAnimationOptions = [UIViewAnimationOptions.beginFromCurrentState]
         switch curve {
-        case .Linear:
-            options = [options, UIViewAnimationOptions.CurveLinear]
-        case .EaseOut:
-            options = [options, UIViewAnimationOptions.CurveEaseOut]
-        case .EaseIn:
-            options = [options, UIViewAnimationOptions.CurveEaseIn]
-        case .EaseInOut:
-            options = [options, UIViewAnimationOptions.CurveEaseInOut]
+        case .linear:
+            options = [options, UIViewAnimationOptions.curveLinear]
+        case .easeOut:
+            options = [options, UIViewAnimationOptions.curveEaseOut]
+        case .easeIn:
+            options = [options, UIViewAnimationOptions.curveEaseIn]
+        case .easeInOut:
+          break
         }
 
         if autoreverses == true {
-            options.unionInPlace(.Autoreverse)
+            options.formUnion(.autoreverse)
         } else {
-            options.subtractInPlace(.Autoreverse)
+            options.subtract(.autoreverse)
         }
 
         if repeatCount > 0 {
-            options.unionInPlace(.Repeat)
+            options.formUnion(.repeat)
         } else {
-            options.subtractInPlace(.Repeat)
+            options.subtract(.repeat)
         }
         return options
     }
 
     /// Initiates the changes specified in the receivers `animations` block.
-    public override func animate() {
+    open override func animate() {
         let disable = ShapeLayer.disableActions
         ShapeLayer.disableActions = false
 
@@ -149,22 +149,22 @@ public class ViewAnimation: Animation {
         ShapeLayer.disableActions = disable
     }
 
-    private func animateWithSpring(spring: Spring) {
-        UIView.animateWithDuration(self.duration, delay: 0, usingSpringWithDamping: CGFloat(spring.damping), initialSpringVelocity: CGFloat(spring.initialVelocity), options: self.options, animations: self.animationBlock, completion:nil)
+    fileprivate func animateWithSpring(_ spring: Spring) {
+        UIView.animate(withDuration: self.duration, delay: 0, usingSpringWithDamping: CGFloat(spring.damping), initialSpringVelocity: CGFloat(spring.initialVelocity), options: self.options, animations: self.animationBlock, completion:nil)
     }
 
-    private func animateNormal() {
-        UIView.animateWithDuration(self.duration, delay: 0, options: self.options, animations: self.animationBlock, completion:nil)
+    fileprivate func animateNormal() {
+        UIView.animate(withDuration: self.duration, delay: 0, options: self.options, animations: self.animationBlock, completion:nil)
     }
 
-    private func animationBlock() {
+    fileprivate func animationBlock() {
         ViewAnimation.stack.append(self)
         UIView.setAnimationRepeatCount(Float(self.repeatCount))
         self.doInTransaction(self.animations)
         ViewAnimation.stack.removeLast()
     }
 
-    private func doInTransaction(action: () -> Void) {
+    fileprivate func doInTransaction(_ action: () -> Void) {
         CATransaction.begin()
         CATransaction.setAnimationDuration(duration)
         CATransaction.setAnimationTimingFunction(timingFunction)
@@ -177,10 +177,10 @@ public class ViewAnimation: Animation {
 }
 
 /// A sequence of animations that run one after the other. This class ignores the duration property.
-public class ViewAnimationSequence: Animation {
-    private var animations: [Animation]
-    private var currentAnimationIndex: Int = -1
-    private var currentObserver: AnyObject?
+open class ViewAnimationSequence: Animation {
+    fileprivate var animations: [Animation]
+    fileprivate var currentAnimationIndex: Int = -1
+    fileprivate var currentObserver: AnyObject?
 
     /// Initializes a set of animations to execute in sequence.
     ///
@@ -204,7 +204,7 @@ public class ViewAnimationSequence: Animation {
     }
 
     ///  Calling this method will tell the receiver to begin animating.
-    public override func animate() {
+    open override func animate() {
         if currentAnimationIndex != -1 {
             // Animation is already running
             return
@@ -212,7 +212,7 @@ public class ViewAnimationSequence: Animation {
         startNext()
     }
 
-    private func startNext() {
+    fileprivate func startNext() {
         if let observer: AnyObject = currentObserver {
             let currentAnimation = animations[currentAnimationIndex]
             currentAnimation.removeCompletionObserver(observer)
@@ -242,10 +242,10 @@ public class ViewAnimationSequence: Animation {
 
 /// Groups animations so that they can all be run at the same time. The completion call is dispatched when all the
 /// animations in the group have finished. This class ignores the duration property.
-public class ViewAnimationGroup: Animation {
-    private var animations: [Animation]
-    private var observers: [AnyObject] = []
-    private var completed: [Bool]
+open class ViewAnimationGroup: Animation {
+    fileprivate var animations: [Animation]
+    fileprivate var observers: [AnyObject] = []
+    fileprivate var completed: [Bool]
 
     /// Initializes a set of animations to be executed at the same time.
     ///
@@ -266,11 +266,11 @@ public class ViewAnimationGroup: Animation {
     /// - parameter animations: An array of C4Animations
     public init(animations: [Animation]) {
         self.animations = animations
-        completed = [Bool](count: animations.count, repeatedValue: false)
+        completed = [Bool](repeating: false, count: animations.count)
     }
 
     ///  Calling this method will tell the receiver to begin animating.
-    public override func animate() {
+    open override func animate() {
         if !observers.isEmpty {
             // Animation is already running
             return
@@ -286,7 +286,7 @@ public class ViewAnimationGroup: Animation {
         }
     }
 
-    private func completedAnimation(index: Int) {
+    fileprivate func completedAnimation(_ index: Int) {
         let animation = animations[index]
         animation.removeCompletionObserver(observers[index])
         completed[index] = true
@@ -299,9 +299,9 @@ public class ViewAnimationGroup: Animation {
         }
     }
 
-    private func cleanUp() {
-        observers.removeAll(keepCapacity: true)
-        completed = [Bool](count: animations.count, repeatedValue: false)
+    fileprivate func cleanUp() {
+        observers.removeAll(keepingCapacity: true)
+        completed = [Bool](repeating: false, count: animations.count)
         postCompletedEvent()
     }
 }

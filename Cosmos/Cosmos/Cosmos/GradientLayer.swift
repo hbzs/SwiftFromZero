@@ -20,17 +20,17 @@
 import QuartzCore
 
 /// The GradientLayer class draws a color gradient over its background color, filling the shape of the layer (including rounded corners)
-public class GradientLayer: CAGradientLayer {
+open class GradientLayer: CAGradientLayer {
     /// A boolean value that, when true, prevents the animation of a shape's properties.
     ///
     /// This value can be set globally, after which changes to any shape's properties will be immediate.
-    public static var disableActions = true
+    open static var disableActions = true
 
-    private var _rotation = 0.0
+    fileprivate var _rotation = 0.0
 
     /// The value of the receiver's current rotation state.
     /// This value is cumulative, and can represent values beyong +/- π
-    public dynamic var rotation: Double {
+    open dynamic var rotation: Double {
         return _rotation
     }
 
@@ -38,17 +38,17 @@ public class GradientLayer: CAGradientLayer {
     ///
     ///  - parameter key: The identifier of the action.
     ///  - returns: the action object assigned to the specified key.
-    public override func actionForKey(key: String) -> CAAction? {
+    open override func action(forKey key: String) -> CAAction? {
         if ShapeLayer.disableActions == true {
             return nil
         }
 
         if key != "colors" {
-            return super.actionForKey(key)
+            return super.action(forKey: key)
         }
 
         let animation: CABasicAnimation
-        if let viewAnimation = ViewAnimation.stack.last as? ViewAnimation where viewAnimation.spring != nil {
+        if let viewAnimation = ViewAnimation.stack.last as? ViewAnimation , viewAnimation.spring != nil {
             animation = CASpringAnimation(keyPath: key)
         } else {
             animation = CABasicAnimation(keyPath: key)

@@ -19,7 +19,7 @@
 
 import UIKit
 
-public class MenuIcons : CanvasController {
-    public override func setup() {
+open class MenuIcons : CanvasController {
+    open override func setup() {
     }
 }

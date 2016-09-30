@@ -20,5 +20,5 @@
 
 import UIKit
 
-public class StarsBackground : InfiniteScrollView {
+open class StarsBackground : InfiniteScrollView {
 }

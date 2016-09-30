@@ -21,7 +21,7 @@ import Foundation
 import CoreGraphics
 
 /// Triangle defines a concrete subclass of Polygon whose shape is a closed triangle.
-public class Triangle: Polygon {
+open class Triangle: Polygon {
 
     /// Initializes a new Triangle using the specified array of points.
     ///

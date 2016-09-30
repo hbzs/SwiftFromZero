@@ -19,57 +19,57 @@
 
 import ReplayKit
 
-public class ScreenRecorder: NSObject, RPPreviewViewControllerDelegate {
-    public typealias PreviewControllerFinishedAction = (activities: Set<String>?) -> ()
+open class ScreenRecorder: NSObject, RPPreviewViewControllerDelegate {
+    public typealias PreviewControllerFinishedAction = (_ activities: Set<String>?) -> ()
     public typealias RecorderStoppedAction = () -> ()
 
-    let recorder = RPScreenRecorder.sharedRecorder()
+    let recorder = RPScreenRecorder.shared()
     var preview: RPPreviewViewController?
     var activities: Set<String>?
 
-    public var previewFinishedAction: PreviewControllerFinishedAction?
-    public var recordingEndedAction: RecorderStoppedAction?
-    public var enableMicrophone = false
+    open var previewFinishedAction: PreviewControllerFinishedAction?
+    open var recordingEndedAction: RecorderStoppedAction?
+    open var enableMicrophone = false
 
-    public func start() {
+    open func start() {
         preview = nil
-        recorder.startRecordingWithMicrophoneEnabled(enableMicrophone) { error in
+        recorder.startRecording(withMicrophoneEnabled: enableMicrophone) { error in
             if let error = error {
                 print("Start Recording Error: \(error.localizedDescription)")
             }
         }
     }
 
-    public func start(duration: Double) {
+    open func start(_ duration: Double) {
         start()
         wait(duration) {
             self.stop()
         }
     }
 
-    public func stop() {
-        recorder.stopRecordingWithHandler { previewViewController, error in
+    open func stop() {
+        recorder.stopRecording { previewViewController, error in
             self.preview = previewViewController
             self.preview?.previewControllerDelegate = self
             self.recordingEndedAction?()
         }
     }
 
-    public func showPreviewInController(controller: UIViewController) {
+    open func showPreviewInController(_ controller: UIViewController) {
         guard let preview = preview else {
             print("Recorder has no preview to show.")
             return
         }
 
-        controller.presentViewController(preview, animated: true, completion: nil)
+        controller.present(preview, animated: true, completion: nil)
     }
 
-    public func previewController(previewController: RPPreviewViewController, didFinishWithActivityTypes activityTypes: Set<String>) {
+    open func previewController(_ previewController: RPPreviewViewController, didFinishWithActivityTypes activityTypes: Set<String>) {
         activities = activityTypes
     }
 
-    public func previewControllerDidFinish(previewController: RPPreviewViewController) {
-        previewFinishedAction?(activities: activities)
-        preview?.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
+    open func previewControllerDidFinish(_ previewController: RPPreviewViewController) {
+        previewFinishedAction?(activities)
+        preview?.parent?.dismiss(animated: true, completion: nil)
     }
 }

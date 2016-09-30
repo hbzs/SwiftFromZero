@@ -24,20 +24,20 @@ extension Image {
     ///  Applies a fiter to the receiver's contents.
     ///
     ///  - parameter filter: a Filter
-    public func apply(filter: Filter) {
+    public func apply(_ filter: Filter) {
         self.apply(filters:[filter])
     }
 
     ///  Applies an array of fiters to the receiver's contents.
     ///
     ///  - parameter filters: an array of Filter objects
-    public func apply(filters filters: [Filter]) {
+    public func apply(filters: [Filter]) {
         for filter in filters {
             let cifilter = filter.createCoreImageFilter(output)
             if let outputImage = cifilter.outputImage {
                 self.output = outputImage
             } else {
-                print("Failed ot generate outputImage: \(__FUNCTION__)")
+                print("Failed ot generate outputImage: \(#function)")
             }
         }
         self.renderFilteredImage()
@@ -45,13 +45,13 @@ extension Image {
 
     func renderFilteredImage() {
         var extent = self.output.extent
-        if CGRectIsInfinite(extent) {
+        if extent.isInfinite {
             extent = self.ciimage.extent
         }
         let filterContext = CIContext(options:nil)
-        let filteredImage = filterContext.createCGImage(self.output, fromRect:extent)
+        let filteredImage = filterContext.createCGImage(self.output, from:extent)
 
-        dispatch_async(dispatch_get_main_queue()) {
+        DispatchQueue.main.async {
             self.imageView.layer.contents = filteredImage
         }
     }

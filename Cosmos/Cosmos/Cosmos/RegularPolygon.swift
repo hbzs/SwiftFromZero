@@ -23,7 +23,7 @@ import CoreGraphics
 ///RegularPolygon is a is a concrete subclass of Polygon that defines a shape whose sides are uniform (e.g. pentagon, octagon, etc.).
 ///
 /// This class defines two variables called `sides` and `phase` that represent the number of sides and the initial rotation of the shape (respectively). The default shape is a hexagon.
-public class RegularPolygon: Polygon {
+open class RegularPolygon: Polygon {
     /// Returns the number of sides in the polygon.
     ///
     /// Assigning a value to this property will change the number of sides and cause the receiver to automatically update its
@@ -36,7 +36,7 @@ public class RegularPolygon: Polygon {
     /// canvas.add(p)
     /// ````
     @IBInspectable
-    public var sides: Int = 6 {
+    open var sides: Int = 6 {
         didSet {
             assert(sides > 0)
             updatePath()
@@ -56,7 +56,7 @@ public class RegularPolygon: Polygon {
     /// canvas.add(p)
     /// ````
     @IBInspectable
-    public var phase: Double = 0 {
+    open var phase: Double = 0 {
         didSet {
             updatePath()
         }

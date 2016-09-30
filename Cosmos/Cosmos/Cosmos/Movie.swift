@@ -25,7 +25,7 @@ import AVFoundation
 ///The Movie class is meant to simplify the addition of videos to your application. It is also a subclass of View, and so has all the common animation, interaction and notification capabilities.
 ///
 ///A C4Movie’s resizing behaviour is to map itself to the edges of its visible frame. This functionality implicitly uses AVLayerVideoGravityResize as its layer’s default gravity. You can change the frame of the movie from an arbitrary shape back to its original proportion by using its originalSize, originalRatio, or by independently setting either its width or height properties.
-public class Movie: View {
+open class Movie: View {
     var filename: String!
     var player: AVQueuePlayer?
     var currentItem: AVPlayerItem?
@@ -34,13 +34,13 @@ public class Movie: View {
     /// Assigning a value of true to this property will cause the receiver to loop at the end of playback.
     ///
     /// The default value of this property is `true`.
-    public var loops: Bool = true
+    open var loops: Bool = true
 
     /// A variable that provides access to the width of the receiver. Animatable.
     /// The default value of this property is defined by the movie being created.
     /// Assigning a value to this property causes the receiver to change the width of its frame. If the receiver's
     /// `contrainsProportions` variable is set to `true` the receiver's height will change to match the new width.
-    public override var width: Double {
+    open override var width: Double {
         get {
             return Double(view.frame.size.width)
         } set(val) {
@@ -58,7 +58,7 @@ public class Movie: View {
     /// The default value of this property is defined by the movie being created.
     /// Assigning a value to this property causes the receiver to change the height of its frame. If the receiver's
     /// `contrainsProportions` variable is set to `true` the receiver's width will change to match the new height.
-    public override var height: Double {
+    open override var height: Double {
         get {
             return Double(view.frame.size.height)
         } set(val) {
@@ -76,13 +76,13 @@ public class Movie: View {
     /// Assigning a value of true to this property will cause the receiver to scale its entire frame whenever its `width` or
     /// `height` variables are set.
     /// The default value of this property is `true`.
-    public var constrainsProportions: Bool = true
+    open var constrainsProportions: Bool = true
 
     /// The original size of the receiver when it was initialized.
-    public internal(set) var originalSize: Size = Size(1, 1)
+    open internal(set) var originalSize: Size = Size(1, 1)
 
     /// The original width/height ratio of the receiver when it was initialized.
-    public var originalRatio: Double {
+    open var originalRatio: Double {
         get {
             return originalSize.width / originalSize.height
         }
@@ -91,15 +91,15 @@ public class Movie: View {
     /// Mute/Unmute the audio track.
     ///
     /// The default value of this property is `false`.
-    public var muted: Bool {
+    open var muted: Bool {
         get {
             guard let p = player else {
                 return false
             }
-            return p.muted
+            return p.isMuted
         }
         set {
-            player?.muted = newValue
+            player?.isMuted = newValue
         }
     }
 
@@ -118,16 +118,16 @@ public class Movie: View {
             return self.layer as! PlayerLayer // swiftlint:disable:this force_cast
         }
 
-        override class func layerClass() -> AnyClass {
+      override class var layerClass : AnyClass {
             return PlayerLayer.self
         }
     }
 
     /// The current rotation value of the view. Animatable.
     /// - returns: A Double value representing the cumulative rotation of the view, measured in Radians.
-    public override var rotation: Double {
+    open override var rotation: Double {
         get {
-            if let number = movieLayer.valueForKeyPath(Layer.rotationKey) as? NSNumber {
+            if let number = movieLayer.value(forKeyPath: Layer.rotationKey) as? NSNumber {
                 return number.doubleValue
             }
             return  0.0
@@ -148,13 +148,13 @@ public class Movie: View {
             print("Couldn't set up AVAudioSession")
         }
 
-        guard let url = NSBundle.mainBundle().URLForResource(filename, withExtension: nil) else {
+        guard let url = Bundle.main.url(forResource: filename, withExtension: nil) else {
             print("Couldn't retrieve url for: \(filename)")
             return nil
         }
 
-        let asset = AVAsset(URL: url)
-        let tracks = asset.tracksWithMediaType(AVMediaTypeVideo)
+        let asset = AVAsset(url: url)
+        let tracks = asset.tracks(withMediaType: AVMediaTypeVideo)
 
         //grab the movie track and size
         let movieTrack = tracks[0]
@@ -164,12 +164,12 @@ public class Movie: View {
         self.filename = filename
         //initialize player with item
         let newPlayer = AVQueuePlayer(playerItem: AVPlayerItem(asset: asset))
-        newPlayer.actionAtItemEnd = .Pause
+        newPlayer.actionAtItemEnd = .pause
         currentItem = newPlayer.currentItem
         player = newPlayer
 
         //runs an overrideable method for handling the end of the movie
-        on(event: AVPlayerItemDidPlayToEndTimeNotification) {
+        on(event: NSNotification.Name.AVPlayerItemDidPlayToEndTime.rawValue) {
             self.handleReachedEnd()
         }
 
@@ -197,7 +197,7 @@ public class Movie: View {
     /// Begins playback of the current item.
     ///
     /// This is the same as setting rate to 1.0.
-    public func play() {
+    open func play() {
         guard let p = player else {
             print("The current movie's player is not properly initialized")
             return
@@ -208,7 +208,7 @@ public class Movie: View {
     /// Pauses playback.
     ///
     /// This is the same as setting rate to 0.0.
-    public func pause() {
+    open func pause() {
         guard let p = player else {
             print("The current movie's player is not properly initialized")
             return
@@ -219,19 +219,19 @@ public class Movie: View {
     /// Stops playback.
     ///
     /// This is the same as setting rate to 0.0 and resetting the current time to 0.
-    public func stop() {
+    open func stop() {
         guard let p = player else {
             print("The current movie's player is not properly initialized")
             return
         }
-        p.seekToTime(CMTimeMake(0, 1))
+        p.seek(to: CMTimeMake(0, 1))
         p.pause()
     }
 
     /// The action to perform at the end of playback.
     ///
     /// - parameter action: A block of code to execute at the end of playback.
-    public func reachedEnd(action: ()->()) {
+    open func reachedEnd(_ action: @escaping ()->()) {
         reachedEndAction = action
     }
 

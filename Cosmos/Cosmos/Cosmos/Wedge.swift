@@ -21,7 +21,7 @@ import QuartzCore
 import UIKit
 
 /// Wedge is a concrete subclass of Shape whose shape is a wedge with a rounded outer edge.
-public class Wedge: Shape {
+open class Wedge: Shape {
 
     /// Initializes a new Wedge, with the wedge always taking the shortest distance between start and end.
     ///
@@ -57,10 +57,11 @@ public class Wedge: Shape {
     public init(center: Point, radius: Double, start: Double, end: Double, clockwise: Bool) {
         super.init()
 
-        let wedge = CGPathCreateMutable()
-        CGPathAddArc(wedge, nil, CGFloat(center.x), CGFloat(center.y), CGFloat(radius), CGFloat(start), CGFloat(end), !clockwise)
-        CGPathAddLineToPoint(wedge, nil, CGFloat(center.x), CGFloat(center.y))
-        CGPathCloseSubpath(wedge)
+        let wedge = CGMutablePath()
+      //mark
+      wedge.addArc(center: CGPoint(x:center.x,y:center.y), radius: CGFloat(radius), startAngle:  CGFloat(start), endAngle:  CGFloat(end), clockwise: !clockwise)
+      wedge.move(to: CGPoint(x:CGFloat(center.x),y:CGFloat(center.y)))
+        wedge.closeSubpath()
         path = Path(path: wedge)
         adjustToFitPath()
     }

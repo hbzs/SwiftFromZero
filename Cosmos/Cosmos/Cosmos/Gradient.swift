@@ -20,19 +20,19 @@
 import UIKit
 
 ///The Gradient class draws a color gradient over its background color, filling the shape of the view (including rounded corners).
-public class Gradient: View {
+open class Gradient: View {
     class GradientView: UIView {
         var gradientLayer: GradientLayer {
             return self.layer as! GradientLayer // swiftlint:disable:this force_cast
         }
 
-        override class func layerClass() -> AnyClass {
+      override class var layerClass : AnyClass {
             return GradientLayer.self
         }
     }
 
     ///The background layer of the receiver.
-    public var gradientLayer: GradientLayer {
+    open var gradientLayer: GradientLayer {
         return gradientView.gradientLayer
     }
 
@@ -41,9 +41,9 @@ public class Gradient: View {
     }
 
     ///An array of Color objects defining the color of each gradient stop. Animatable.
-    public var colors: [Color] {
+    open var colors: [Color] {
         get {
-            if let cgcolors = gradientLayer.colors as? [CGColorRef] {
+            if let cgcolors = gradientLayer.colors as? [CGColor] {
                 var array = [Color]()
                 for c in cgcolors {
                     array.append(Color(c))
@@ -53,7 +53,7 @@ public class Gradient: View {
             return [C4Blue, C4Pink]
         } set {
             assert(newValue.count >= 2, "colors must have at least 2 elements")
-            var cgcolors = [CGColorRef]()
+            var cgcolors = [CGColor]()
             for c in newValue {
                 cgcolors.append(c.CGColor)
             }
@@ -64,7 +64,7 @@ public class Gradient: View {
     ///An optional array of Double values defining the location of each gradient stop. Animatable.
     ///
     ///Defaults to [0,1]
-    public var locations: [Double] {
+    open var locations: [Double] {
         get {
             if let locations = gradientLayer.locations as? [Double] {
                 return locations
@@ -73,7 +73,7 @@ public class Gradient: View {
         } set {
             var numbers = [NSNumber]()
             for n in newValue {
-                numbers.append(n)
+              numbers.append(NSNumber(value:Double(n)))
             }
             gradientLayer.locations = numbers
         }
@@ -82,7 +82,7 @@ public class Gradient: View {
     ///The start point of the gradient when drawn in the layer’s coordinate space. Animatable.
     ///
     ///Defaults to the top-left corner of the frame {0.0,0.0}
-    public var startPoint: Point {
+    open var startPoint: Point {
         get {
             return Point(gradientLayer.startPoint)
         } set {
@@ -93,7 +93,7 @@ public class Gradient: View {
     ///The end point of the gradient when drawn in the layer’s coordinate space. Animatable.
     ///
     ///Defaults to the top-right corner of the frame {1.0,0.0}
-    public var endPoint: Point {
+    open var endPoint: Point {
         get {
             return Point(gradientLayer.endPoint)
         } set {
@@ -103,9 +103,9 @@ public class Gradient: View {
 
     /// The current rotation value of the view. Animatable.
     /// - returns: A Double value representing the cumulative rotation of the view, measured in Radians.
-    public override var rotation: Double {
+    open override var rotation: Double {
         get {
-            if let number = gradientLayer.valueForKeyPath(Layer.rotationKey) as? NSNumber {
+            if let number = gradientLayer.value(forKeyPath: Layer.rotationKey) as? NSNumber {
                 return number.doubleValue
             }
             return  0.0

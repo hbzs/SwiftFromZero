@@ -20,7 +20,7 @@
 
 import UIKit
 
-public class MenuRings : CanvasController {
-    public override func setup() {
+open class MenuRings : CanvasController {
+    open override func setup() {
     }
 }

@@ -20,7 +20,7 @@
 
 import UIKit
 
-public class MenuSelector : CanvasController {
-    public override func setup() {
+open class MenuSelector : CanvasController {
+    open override func setup() {
     }
 }

@@ -21,24 +21,24 @@ import QuartzCore
 import UIKit
 
 ///  Curve is a concrete subclass of Shape that has a special initialzer that creates an bezier whose shape is defined by its end points and two control points.
-public class Curve: Shape {
+open class Curve: Shape {
 
     /// The beginning and end points of the receiver. Animatable.
-    public var endPoints = (Point(), Point()) {
+    open var endPoints = (Point(), Point()) {
         didSet {
             updatePath()
         }
     }
 
     /// The control points of the receiver. Animatable.
-    public var controlPoints = (Point(), Point()) {
+    open var controlPoints = (Point(), Point()) {
         didSet {
             updatePath()
         }
     }
 
     /// The center of the curve's view.
-    public override var center: Point {
+    open override var center: Point {
         get {
             return Point(view.center)
         }
@@ -54,7 +54,7 @@ public class Curve: Shape {
     }
 
     /// The origin of the curve's view.
-    public override var origin: Point {
+    open override var origin: Point {
         get {
             return Point(view.frame.origin)
         }
@@ -86,8 +86,8 @@ public class Curve: Shape {
         updatePath()
     }
 
-    private var pauseUpdates = false
-    func batchUpdates(updates: Void -> Void) {
+    fileprivate var pauseUpdates = false
+    func batchUpdates(_ updates: (Void) -> Void) {
         pauseUpdates = true
         updates()
         pauseUpdates = false
@@ -99,15 +99,14 @@ public class Curve: Shape {
             return
         }
 
-        let curve = CGPathCreateMutable()
-        CGPathMoveToPoint(curve, nil,
-            CGFloat(endPoints.0.x), CGFloat(endPoints.0.y))
-        CGPathAddCurveToPoint(curve, nil,
-            CGFloat(controlPoints.0.x), CGFloat(controlPoints.0.y),
-            CGFloat(controlPoints.1.x), CGFloat(controlPoints.1.y),
-            CGFloat(endPoints.1.x), CGFloat(endPoints.1.y))
+        let curve = CGMutablePath()
+      // mark
+      curve.move(to: CGPoint(x:CGFloat(endPoints.0.x),y:CGFloat(endPoints.0.y)))
+      curve.addCurve(to: CGPoint(x:CGFloat(endPoints.1.x), y:CGFloat(endPoints.1.y)),
+                     control1: CGPoint(x:CGFloat(controlPoints.0.x), y:CGFloat(controlPoints.0.y)),
+                     control2: CGPoint(x:CGFloat(controlPoints.1.x), y:CGFloat(controlPoints.1.y)))
 
-        self.frame = Rect(CGPathGetBoundingBox(curve))
+        self.frame = Rect(curve.boundingBox)
         self.path = Path(path: curve)
         adjustToFitPath()
     }

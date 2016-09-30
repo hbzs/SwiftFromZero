@@ -21,7 +21,7 @@ import Foundation
 import CoreGraphics
 
 ///  Polygon is a concrete subclass of Shape that has a special initialzer that creates a non-uniform shape made up of 3 or more points.
-public class Polygon: Shape {
+open class Polygon: Shape {
 
     /// Returns the array of points that make up the polygon.
     ///
@@ -36,7 +36,7 @@ public class Polygon: Shape {
     /// p.center = canvas.center
     /// canvas.add(p)
     /// ````
-    public var points: [Point] {
+    open var points: [Point] {
         didSet {
             updatePath()
         }
@@ -102,7 +102,7 @@ public class Polygon: Shape {
     ///  Closes the shape.
     ///
     ///  This method appends a line between the shape's last point and its first point.
-    public func close() {
+    open func close() {
         let p = path
         p?.closeSubpath()
         self.path = p

@@ -20,14 +20,14 @@
 import QuartzCore
 
 /// A subclass of CALayer that has a rotation property.
-public class Layer: CALayer {
+open class Layer: CALayer {
     static let rotationKey = "rotation"
 
-    private var _rotation = 0.0
+    fileprivate var _rotation = 0.0
 
     /// The value of the receiver's current rotation state.
     /// This value is cumulative, and can represent values beyong +/- π
-    public dynamic var rotation: Double {
+    open dynamic var rotation: Double {
         return _rotation
     }
 
@@ -38,7 +38,7 @@ public class Layer: CALayer {
 
     /// Initializes a new Layer from a specified layer of any other type.
     /// - parameter layer: Another CALayer
-    public override init(layer: AnyObject) {
+    public override init(layer: Any) {
         super.init(layer: layer)
         if let layer = layer as? Layer {
             _rotation = layer._rotation
@@ -54,7 +54,7 @@ public class Layer: CALayer {
     /// Sets a value for a given key.
     /// - parameter value: The value for the property identified by key.
     /// - parameter key: The name of one of the receiver's properties
-    public override func setValue(value: AnyObject?, forKey key: String) {
+    open override func setValue(_ value: Any?, forKey key: String) {
         super.setValue(value, forKey: key)
         if key == Layer.rotationKey {
             _rotation = value as? Double ?? 0.0
@@ -64,34 +64,35 @@ public class Layer: CALayer {
     ///  This method searches for the given action object of the layer. Actions define dynamic behaviors for a layer. For example, the animatable properties of a layer typically have corresponding action objects to initiate the actual animations. When that property changes, the layer looks for the action object associated with the property name and executes it. You can also associate custom action objects with your layer to implement app-specific actions.
     ///  - parameter key: The identifier of the action.
     ///  - returns: the action object assigned to the specified key.
-    public override func actionForKey(key: String) -> CAAction? {
+    open override func action(forKey key: String) -> CAAction? {
         if key == Layer.rotationKey {
             let animation = CABasicAnimation(keyPath: key)
             animation.configureOptions()
-            if let layer = presentationLayer() as? Layer {
-                animation.fromValue = layer.valueForKey(key)
+          let layer = presentation()
+            if (layer?.isKind(of: Layer.self))! {
+                animation.fromValue = layer?.value(forKey: key)
             }
             return animation
         }
-        return super.actionForKey(key)
+        return super.action(forKey: key)
     }
 
     /// Returns a Boolean indicating whether changes to the specified key require the layer to be redisplayed.
     /// - parameter key: A string that specifies an attribute of the layer.
     /// - returns: A Boolean indicating whether changes to the specified key require the layer to be redisplayed.
-    public override class func needsDisplayForKey(key: String) -> Bool {
+    open override class func needsDisplay(forKey key: String) -> Bool {
         if  key == Layer.rotationKey {
             return true
         }
-        return super.needsDisplayForKey(key)
+        return super.needsDisplay(forKey: key)
     }
 
     /// Reloads the content of this layer.
     /// Do not call this method directly.
-    public override func display() {
-        guard let presentation = presentationLayer() as? Layer else {
+    open override func display() {
+        guard  (presentation()?.isKind(of: Layer.self))! else {
             return
         }
-        setValue(presentation._rotation, forKeyPath: "transform.rotation.z")
+        setValue(presentation()?._rotation, forKeyPath: "transform.rotation.z")
     }
 }

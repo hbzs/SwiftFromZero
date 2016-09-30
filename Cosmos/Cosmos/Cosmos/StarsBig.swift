@@ -19,7 +19,7 @@
 
 import UIKit
 
-public class StarsBig : InfiniteScrollView {
+open class StarsBig : InfiniteScrollView {
     public override init(frame: CGRect) {
         super.init(frame: frame)
     }

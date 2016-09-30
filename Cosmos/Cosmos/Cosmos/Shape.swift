@@ -21,18 +21,18 @@ import QuartzCore
 import UIKit
 
 /// Shape is a concrete subclass of View that draws a bezier path in its coordinate space.
-public class Shape: View {
+open class Shape: View {
     internal class ShapeView: UIView {
         var shapeLayer: ShapeLayer {
             return self.layer as! ShapeLayer // swiftlint:disable:this force_cast
         }
 
-        override class func layerClass() -> AnyClass {
+      override class var layerClass : AnyClass {
             return ShapeLayer.self
         }
 
-        override func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
-            if CGPathContainsPoint(shapeLayer.path, nil, point, shapeLayer.fillRule == kCAFillRuleNonZero ? false : true) {
+        override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+            if (shapeLayer.path?.contains(point))! {
                 return self
             }
             return nil
@@ -40,7 +40,7 @@ public class Shape: View {
     }
 
     /// C4Shape's contents are drawn on a ShapeLayer.
-    public var shapeLayer: ShapeLayer {
+    open var shapeLayer: ShapeLayer {
         get {
             return self.shapeView.shapeLayer
         }
@@ -57,10 +57,10 @@ public class Shape: View {
         strokeColor = C4Purple
         fillColor = C4Blue
         lineWidth = 1
-        lineCap = .Round
-        lineJoin = .Round
+        lineCap = .round
+        lineJoin = .round
 
-        let image = UIImage.createWithColor(UIColor.clearColor(), size: CGSize(width: 1, height: 1)).CGImage
+        let image = UIImage.createWithColor(UIColor.clear, size: CGSize(width: 1, height: 1)).cgImage
         shapeLayer.contents = image
     }
 
@@ -83,10 +83,10 @@ public class Shape: View {
         strokeColor = C4Purple
         fillColor = C4Blue
         lineWidth = 1
-        lineCap = .Round
-        lineJoin = .Round
+        lineCap = .round
+        lineJoin = .round
 
-        let image = UIImage.createWithColor(UIColor.clearColor(), size: CGSize(width: 1, height: 1)).CGImage
+        let image = UIImage.createWithColor(UIColor.clear, size: CGSize(width: 1, height: 1)).cgImage
         shapeLayer.contents = image
     }
 
@@ -94,11 +94,11 @@ public class Shape: View {
     /// - parameter shape: A Shape around which the new shape is created.
     public convenience init(copy original: Shape) {
         //If there is a scale transform we need to undo that
-        let t = CGAffineTransformInvert(original.view.transform)
+        let t = original.view.transform.inverted()
         let x = sqrt(t.a * t.a + t.c * t.c)
         let y = sqrt(t.b * t.b + t.d * t.d)
-        let s = CGAffineTransformMakeScale(x, y)
-        self.init(frame: Rect(CGRectApplyAffineTransform(original.view.frame, s)))
+        let s = CGAffineTransform(scaleX: x, y: y)
+        self.init(frame: Rect(original.view.frame.applying(s)))
 
         let disable = ShapeLayer.disableActions
         ShapeLayer.disableActions = true
@@ -121,7 +121,7 @@ public class Shape: View {
     }
 
     ///An optional variable representing a gradient. If this is non-nil, then the shape will appear to be filled with a gradient.
-    public var gradientFill: Gradient? {
+    open var gradientFill: Gradient? {
         didSet {
             guard gradientFill != nil else {
                 fillColor = clear
@@ -133,12 +133,12 @@ public class Shape: View {
             var b = bounds
             b.origin.y = self.height - b.origin.y
 
-            UIGraphicsBeginImageContextWithOptions(CGSize(b.size), false, UIScreen.mainScreen().scale)
+            UIGraphicsBeginImageContextWithOptions(CGSize(b.size), false, UIScreen.main.scale)
             let context = UIGraphicsGetCurrentContext()
 
-            CGContextDrawTiledImage(context, CGRect(b), gim)
+          context?.draw(gim!, in: CGRect(b))
             let uiimage = UIGraphicsGetImageFromCurrentImageContext()
-            let uicolor = UIColor(patternImage: uiimage)
+            let uicolor = UIColor(patternImage: uiimage!)
             fillColor = Color(uicolor)
             UIGraphicsEndImageContext()
         }
@@ -146,7 +146,7 @@ public class Shape: View {
 
     /// The path defining the shape to be rendered. If the path extends outside the layer bounds it will not automatically
     /// be clipped to the layer. Defaults to nil. Animatable.
-    public var path: Path? {
+    open var path: Path? {
         didSet {
             shapeLayer.path = path?.CGPath
         }
@@ -155,17 +155,17 @@ public class Shape: View {
     internal func updatePath() {}
 
     /// Adjusts the shape's frame to the bounding bounding box of its specified path.
-    public func adjustToFitPath() {
+    open func adjustToFitPath() {
         if shapeLayer.path == nil {
             return
         }
-        view.bounds = CGPathGetPathBoundingBox(shapeLayer.path)
+        view.bounds = (shapeLayer.path?.boundingBoxOfPath)!
         view.frame = view.bounds
     }
 
 
     /// Returns the receiver's frame. Animatable.
-    public override var frame: Rect {
+    open override var frame: Rect {
         get {
             return Rect(view.frame)
         }
@@ -177,13 +177,13 @@ public class Shape: View {
 
     /// The line width used when stroking the path. Defaults to 1.0. Animatable.
     @IBInspectable
-    public var lineWidth: Double {
+    open var lineWidth: Double {
         get { return Double(shapeLayer.lineWidth) }
         set(width) { shapeLayer.lineWidth = CGFloat(width) }
     }
 
     /// The color to stroke the path, or nil for no fill. Defaults to opaque black. Animatable.
-    public var strokeColor: Color? {
+    open var strokeColor: Color? {
         get {
             if let color = shapeLayer.strokeColor {
                 return Color(color)
@@ -197,7 +197,7 @@ public class Shape: View {
     }
 
     /// The color to fill the path, or nil for no fill. Defaults to opaque black. Animatable.
-    public var fillColor: Color? {
+    open var fillColor: Color? {
         get {
             if let color = shapeLayer.fillColor {
                 return Color(color)
@@ -211,22 +211,22 @@ public class Shape: View {
     }
 
     /// The fill rule used when filling the path. Defaults to `NonZero`.
-    public var fillRule: FillRule {
+    open var fillRule: FillRule {
         get {
             switch shapeLayer.fillRule {
             case kCAFillRuleNonZero:
-                return .NonZero
+                return .nonZero
             case kCAFillRuleEvenOdd:
-                return .EvenOdd
+                return .evenOdd
             default:
-                return .NonZero
+                return .nonZero
             }
         }
         set(fillRule) {
             switch fillRule {
-            case .NonZero:
+            case .nonZero:
                 shapeLayer.fillRule = kCAFillRuleNonZero
-            case .EvenOdd:
+            case .evenOdd:
                 shapeLayer.fillRule = kCAFillRuleEvenOdd
             }
         }
@@ -234,9 +234,9 @@ public class Shape: View {
 
     /// The current rotation value of the view. Animatable.
     /// - returns: A Double value representing the cumulative rotation of the view, measured in Radians.
-    public override var rotation: Double {
+    open override var rotation: Double {
         get {
-            if let number = shapeLayer.valueForKeyPath(Layer.rotationKey) as? NSNumber {
+            if let number = shapeLayer.value(forKeyPath: Layer.rotationKey) as? NSNumber {
                 return number.doubleValue
             }
             return  0.0
@@ -249,7 +249,7 @@ public class Shape: View {
     /// This value defines the start of the path used to draw the stroked outline. The value must be in the range [0,1]
     /// with zero representing the start of the path and one the end. Values in between zero and one are interpolated
     /// linearly along the path length. Defaults to zero. Animatable.
-    public var strokeStart: Double {
+    open var strokeStart: Double {
         get { return Double(shapeLayer.strokeStart) }
         set(start) { shapeLayer.strokeStart = CGFloat(start) }
     }
@@ -257,86 +257,86 @@ public class Shape: View {
     /// This value defines the end of the path used to draw the stroked outline. The value must be in the range [0,1]
     /// with zero representing the start of the path and one the end. Values in between zero and one are interpolated
     /// linearly along the path length. Defaults to 1.0. Animatable.
-    public var strokeEnd: Double {
+    open var strokeEnd: Double {
         get { return Double(shapeLayer.strokeEnd) }
         set(end) { shapeLayer.strokeEnd = CGFloat(end) }
     }
 
     /// The miter limit used when stroking the path. Defaults to ten. Animatable.
     @IBInspectable
-    public var miterLimit: Double {
+    open var miterLimit: Double {
         get { return Double(shapeLayer.miterLimit) }
         set(miterLimit) { shapeLayer.miterLimit = CGFloat(miterLimit) }
     }
 
     /// The cap style used when stroking the path. Defaults to `Butt`.
-    public var lineCap: LineCap {
+    open var lineCap: LineCap {
         get {
             switch shapeLayer.lineCap {
             case kCALineCapButt:
-                return .Butt
+                return .butt
             case kCALineCapRound:
-                return .Round
+                return .round
             case kCALineCapSquare:
-                return .Square
+                return .square
             default:
-                return .Butt
+                return .butt
             }
         }
         set(lineCap) {
             switch lineCap {
-            case .Butt:
+            case .butt:
                 shapeLayer.lineCap = kCALineCapButt
-            case .Round:
+            case .round:
                 shapeLayer.lineCap = kCALineCapRound
-            case .Square:
+            case .square:
                 shapeLayer.lineCap = kCALineCapSquare
             }
         }
     }
 
     /// The join style used when stroking the path. Defaults to `Miter`.
-    public var lineJoin: LineJoin {
+    open var lineJoin: LineJoin {
         get {
             switch shapeLayer.lineJoin {
             case kCALineJoinMiter:
-                return .Miter
+                return .miter
             case kCALineJoinRound:
-                return .Round
+                return .round
             case kCALineJoinBevel:
-                return .Bevel
+                return .bevel
             default:
-                return .Miter
+                return .miter
             }
         }
         set(lineJoin) {
             switch lineJoin {
-            case .Miter:
+            case .miter:
                 shapeLayer.lineJoin = kCALineJoinMiter
-            case .Round:
+            case .round:
                 shapeLayer.lineJoin = kCALineJoinRound
-            case .Bevel:
+            case .bevel:
                 shapeLayer.lineJoin = kCALineJoinBevel
             }
         }
     }
 
     /// The phase of the dashing pattern applied when creating the stroke. Defaults to zero. Animatable.
-    public var lineDashPhase: Double {
+    open var lineDashPhase: Double {
         get { return Double(shapeLayer.lineDashPhase) }
         set(phase) { shapeLayer.lineDashPhase = CGFloat(phase) }
     }
 
 
     /// The dash pattern applied when creating the stroked version of the path. Defaults to nil.
-    public var lineDashPattern: [NSNumber]? {
+    open var lineDashPattern: [NSNumber]? {
         get { return shapeLayer.lineDashPattern as [NSNumber]? }
         set(pattern) { shapeLayer.lineDashPattern = pattern }
     }
 
     /// The size of the receiver including the width of its stroke.
     /// - returns: The bounding box that surrounds the shape and its line.
-    public func intrinsicContentSize() -> CGSize {
+    open func intrinsicContentSize() -> CGSize {
         if let path = path {
             let boundingBox = path.boundingBox()
             return CGSize(width: boundingBox.max.x + lineWidth/2, height: boundingBox.max.y + lineWidth/2)
@@ -346,7 +346,7 @@ public class Shape: View {
     }
 
     /// Returns true if there is no path.
-    public func isEmpty() -> Bool {
+    open func isEmpty() -> Bool {
         return path == nil || path!.isEmpty()
     }
 
@@ -354,29 +354,29 @@ public class Shape: View {
     /// The join style for joints on the shape's path.
     public enum LineJoin {
         /// Specifies a miter line shape of the joints between connected segments of a stroked path.
-        case Miter
+        case miter
 
         /// Specifies a round line shape of the joints between connected segments of a stroked path.
-        case Round
+        case round
 
         /// Specifies a bevel line shape of the joints between connected segments of a stroked path.
-        case Bevel
+        case bevel
     }
 
 
     /// The cap style for the ends of the shape's path.
     public enum LineCap {
         /// Specifies a butt line cap style for endpoints for an open path when stroked.
-        case Butt
+        case butt
 
         /// Specifies a round line cap style for endpoints for an open path when stroked.
-        case Round
+        case round
 
         /// Specifies a square line cap style for endpoints for an open path when stroked.
-        case Square
+        case square
     }
 
-    public override func hitTest(point: Point) -> Bool {
+    open override func hitTest(_ point: Point) -> Bool {
         if let p = path {
             return p.containsPoint(point)
         }

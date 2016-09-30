@@ -21,10 +21,10 @@ import QuartzCore
 import UIKit
 
 ///  QuadCurve is a concrete subclass of Curve that modifies it shape based on a single point rather than 2 used by its parent class.
-public class QuadCurve: Curve {
+open class QuadCurve: Curve {
 
     /// A Point used to calculate the shape of the quadratic curve.
-    public var controlPoint = Point() {
+    open var controlPoint = Point() {
         didSet {
             self.controlPoints = (controlPoint, controlPoint)
         }

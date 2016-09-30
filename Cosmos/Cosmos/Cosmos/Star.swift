@@ -21,7 +21,7 @@ import Foundation
 import CoreGraphics
 
 /// Star is a concrete subclass of Polygon that defines a star shape.
-public class Star: Polygon {
+open class Star: Polygon {
 
     /// Initializes a new Star shape.
     ///

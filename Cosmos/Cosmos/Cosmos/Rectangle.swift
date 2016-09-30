@@ -21,7 +21,7 @@ import Foundation
 import CoreGraphics
 
 ///  Rectangle is a concrete subclass of Shape that has a special initialzer that creates a rectangle whose shape is determined by its frame.
-public class Rectangle: Shape {
+open class Rectangle: Shape {
     /// Returns the corner size for the receiver.
     ///
     /// The shape of a C4Rectangle's corners are specified with width and height.
@@ -34,7 +34,7 @@ public class Rectangle: Shape {
     /// r.corner = Size(10,10)
     /// canvas.add(r)
     /// ````
-    public var corner: Size = Size(8, 8) {
+    open var corner: Size = Size(8, 8) {
         didSet {
             updatePath()
         }

@@ -20,7 +20,7 @@
 
 import UIKit
 
-public class InfoPanel : CanvasController {
-    public override func setup() {
+open class InfoPanel : CanvasController {
+    open override func setup() {
     }
 }

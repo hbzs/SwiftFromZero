@@ -21,7 +21,7 @@ import QuartzCore
 import UIKit
 
 ///  Arc is a concrete subclass of Shape that has a special initialzer that creates an arc whose shape is defined by rotating around a specified point.
-public class Arc: Shape {
+open class Arc: Shape {
 
     /// Creates an arc, whose edge is always drawn on the shorter circumference.
     ///
@@ -51,8 +51,8 @@ public class Arc: Shape {
     public init(center: Point, radius: Double, start: Double, end: Double, clockwise: Bool) {
         super.init()
 
-        let arc = CGPathCreateMutable()
-        CGPathAddArc(arc, nil, CGFloat(center.x), CGFloat(center.y), CGFloat(radius), CGFloat(start), CGFloat(end), !clockwise)
+        let arc = CGMutablePath()
+      arc.addArc(center: CGPoint(center), radius: CGFloat(radius), startAngle: CGFloat(start), endAngle: CGFloat(end), clockwise: !clockwise)
         path = Path(path: arc)
         adjustToFitPath()
     }

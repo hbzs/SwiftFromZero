@@ -20,7 +20,7 @@
 import QuartzCore
 
 /// Extension for CAShapeLayer that allows overriding the actions for specific properties.
-public class ShapeLayer: CAShapeLayer {
+open class ShapeLayer: CAShapeLayer {
     /// A boolean value that, when true, prevents the animation of a shape's properties.
     ///
     /// ````
@@ -29,47 +29,47 @@ public class ShapeLayer: CAShapeLayer {
     /// ShapeLayer.disableActions = false
     ///
     /// This value can be set globally, after which changes to any shape's properties will be immediate.
-    public static var disableActions = true
+    open static var disableActions = true
 
     ///  This method searches for the given action object of the layer. Actions define dynamic behaviors for a layer. For example, the animatable properties of a layer typically have corresponding action objects to initiate the actual animations. When that property changes, the layer looks for the action object associated with the property name and executes it. You can also associate custom action objects with your layer to implement app-specific actions.
     ///
     ///  - parameter key: The identifier of the action.
     ///
     ///  - returns: the action object assigned to the specified key.
-    public override func actionForKey(key: String) -> CAAction? {
+    open override func action(forKey key: String) -> CAAction? {
         if ShapeLayer.disableActions == true {
             return nil
         }
 
         let animatableProperties = ["lineWidth", "strokeEnd", "strokeStart", "strokeColor", "path", "fillColor", "lineDashPhase", "contents", Layer.rotationKey, "shadowColor", "shadowRadius", "shadowOffset", "shadowOpacity", "shadowPath"]
         if !animatableProperties.contains(key) {
-            return super.actionForKey(key)
+            return super.action(forKey: key)
         }
 
         let animation: CABasicAnimation
-        if let viewAnimation = ViewAnimation.stack.last as? ViewAnimation where viewAnimation.spring != nil {
+        if let viewAnimation = ViewAnimation.stack.last as? ViewAnimation , viewAnimation.spring != nil {
             animation = CASpringAnimation(keyPath: key)
         } else {
             animation = CABasicAnimation(keyPath: key)
         }
 
         animation.configureOptions()
-        animation.fromValue = valueForKey(key)
+        animation.fromValue = value(forKey: key)
 
         if key == Layer.rotationKey {
-            if let layer = presentationLayer() as? ShapeLayer {
-                animation.fromValue = layer.valueForKey(key)
+            if (presentation()?.isKind(of: ShapeLayer.self))! {
+                animation.fromValue = presentation()?.value(forKey: key)
             }
         }
 
         return animation
     }
 
-    private var _rotation = 0.0
+    fileprivate var _rotation = 0.0
 
     /// The value of the receiver's current rotation state.
     /// This value is cumulative, and can represent values beyong +/- π
-    public dynamic var rotation: Double {
+    open dynamic var rotation: Double {
         return _rotation
     }
 
@@ -80,7 +80,7 @@ public class ShapeLayer: CAShapeLayer {
 
     /// Initializes a new C4Layer from a specified layer of any other type.
     /// - parameter layer: Another CALayer
-    public override init(layer: AnyObject) {
+    public override init(layer: Any) {
         super.init(layer: layer)
         if let layer = layer as? ShapeLayer {
             _rotation = layer._rotation
@@ -96,7 +96,7 @@ public class ShapeLayer: CAShapeLayer {
     /// Sets a value for a given key.
     /// - parameter value: The value for the property identified by key.
     /// - parameter key: The name of one of the receiver's properties
-    public override func setValue(value: AnyObject?, forKey key: String) {
+    open override func setValue(_ value: Any?, forKey key: String) {
         super.setValue(value, forKey: key)
         if key == Layer.rotationKey {
             _rotation = value as? Double ?? 0.0
@@ -106,20 +106,20 @@ public class ShapeLayer: CAShapeLayer {
     /// Returns a Boolean indicating whether changes to the specified key require the layer to be redisplayed.
     /// - parameter key: A string that specifies an attribute of the layer.
     /// - returns: A Boolean indicating whether changes to the specified key require the layer to be redisplayed.
-    public override class func needsDisplayForKey(key: String) -> Bool {
+    open override class func needsDisplay(forKey key: String) -> Bool {
         if  key == Layer.rotationKey {
             return true
         }
-        return super.needsDisplayForKey(key)
+        return super.needsDisplay(forKey: key)
     }
 
     /// Reloads the content of this layer.
     /// Do not call this method directly.
-    public override func display() {
-        guard let presentation = presentationLayer() as? ShapeLayer else {
+    open override func display() {
+        guard ((presentation())?.isKind(of:ShapeLayer.self))! else {
             return
         }
-        setValue(presentation._rotation, forKeyPath: "transform.rotation.z")
+        setValue(presentation()?._rotation, forKeyPath: "transform.rotation.z")
     }
 }
 
@@ -133,7 +133,7 @@ extension CABasicAnimation {
             self.repeatCount = Float(animation.repeatCount)
         }
         self.fillMode = kCAFillModeBoth
-        self.removedOnCompletion = false
+        self.isRemovedOnCompletion = false
     }
 }
 
@@ -143,7 +143,7 @@ extension CASpringAnimation {
     ///  The options set in this method are favorable for the inner workings of C4's animation behaviours.
     public override func configureOptions() {
         super.configureOptions()
-        if let animation = ViewAnimation.currentAnimation as? ViewAnimation, spring = animation.spring {
+        if let animation = ViewAnimation.currentAnimation as? ViewAnimation, let spring = animation.spring {
             mass = CGFloat(spring.mass)
             damping = CGFloat(spring.damping)
             stiffness = CGFloat(spring.stiffness)

@@ -19,5 +19,5 @@
 
 import UIKit
 
-public class StarsSmall : InfiniteScrollView {
+open class StarsSmall : InfiniteScrollView {
 }

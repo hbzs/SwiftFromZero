@@ -28,7 +28,7 @@ extension UIGestureRecognizer {
     /// The current location of the gesture in the reference view.
     public var location: Point {
         get {
-            return Point(locationInView(referenceView))
+            return Point(self.location(in: referenceView))
         }
     }
     internal var referenceView: UIView? {
@@ -48,7 +48,7 @@ extension UIGestureRecognizer {
     }
     internal var actionHandler: AnyObject? {
         get {
-            return objc_getAssociatedObject(self, &handlerAssociationKey)
+            return objc_getAssociatedObject(self, &handlerAssociationKey) as AnyObject?
         }
         set(newValue) {
             objc_setAssociatedObject(self, &handlerAssociationKey, newValue, .OBJC_ASSOCIATION_RETAIN)
@@ -70,7 +70,7 @@ extension UIGestureRecognizer {
 }
 
 
-public typealias TapAction = (locations: [Point], center: Point, state: UIGestureRecognizerState) -> ()
+public typealias TapAction = (_ locations: [Point], _ center: Point, _ state: UIGestureRecognizerState) -> ()
 
 extension UITapGestureRecognizer {
     /// The closure to call when there is a gesture event.
@@ -80,17 +80,17 @@ extension UITapGestureRecognizer {
         }
         set {
             if let handler: AnyObject = actionHandler {
-                removeTarget(handler, action: "handleGesture:")
+                removeTarget(handler, action: #selector(TapGestureHandler.handleGesture(_:)))
             }
                     if let action = newValue {
                 actionHandler = TapGestureHandler(action)
-                addTarget(actionHandler!, action: "handleGesture:")
+                addTarget(actionHandler!, action: #selector(TapGestureHandler.handleGesture(_:)))
             } else {
                 actionHandler = nil
             }
         }
     }
-    internal convenience init(view: UIView, action: TapAction) {
+    internal convenience init(view: UIView, action: @escaping TapAction) {
         self.init()
         self.referenceView = view
         self.tapAction = action
@@ -98,21 +98,21 @@ extension UITapGestureRecognizer {
     /// This class is used as the target of the gesture recognizer action. It forwards the method call to the closure.
     internal class TapGestureHandler: NSObject {
         let action: TapAction
-            init(_ action: TapAction) {
+            init(_ action: @escaping TapAction) {
             self.action = action
         }
-            func handleGesture(gestureRecognizer: UIPanGestureRecognizer) {
+            func handleGesture(_ gestureRecognizer: UIPanGestureRecognizer) {
                 var locations = [Point]()
-                for i in 0..<gestureRecognizer.numberOfTouches() {
-                    locations.append(Point(gestureRecognizer.locationOfTouch(i, inView: gestureRecognizer.referenceView)))
+                for i in 0..<gestureRecognizer.numberOfTouches {
+                    locations.append(Point(gestureRecognizer.location(ofTouch: i, in: gestureRecognizer.referenceView)))
                 }
-                action(locations: locations, center: gestureRecognizer.location, state: gestureRecognizer.state)
+                action(locations, gestureRecognizer.location, gestureRecognizer.state)
         }
     }
 }
 
 
-public typealias PanAction = (locations: [Point], center: Point, translation: Vector, velocity: Vector, state: UIGestureRecognizerState) -> ()
+public typealias PanAction = (_ locations: [Point], _ center: Point, _ translation: Vector, _ velocity: Vector, _ state: UIGestureRecognizerState) -> ()
 
 extension UIPanGestureRecognizer {
     /// The closure to call when there is a gesture event.
@@ -122,11 +122,11 @@ extension UIPanGestureRecognizer {
         }
         set {
             if let handler: AnyObject = actionHandler {
-                removeTarget(handler, action: "handleGesture:")
+                removeTarget(handler, action: #selector(PanGestureHandler.handleGesture(_:)))
             }
                     if let action = newValue {
                 actionHandler = PanGestureHandler(action)
-                addTarget(actionHandler!, action: "handleGesture:")
+                addTarget(actionHandler!, action: #selector(PanGestureHandler.handleGesture(_:)))
             } else {
                 actionHandler = nil
             }
@@ -139,7 +139,7 @@ extension UIPanGestureRecognizer {
     public var translation: Vector {
         get {
             if let view = referenceView {
-                return Vector(translationInView(view))
+                return Vector(self.translation(in: view))
             }
             return Vector()
         }
@@ -150,11 +150,11 @@ extension UIPanGestureRecognizer {
     /// The velocity of the pan gesture, which is expressed in points per second. The velocity is broken into horizontal and vertical components.
     public var velocity: Vector {
         get {
-            return Vector(velocityInView(view))
+            return Vector(self.velocity(in: view))
         }
     }
 
-    internal convenience init(view: UIView, action: PanAction) {
+    internal convenience init(view: UIView, action: @escaping PanAction) {
         self.init()
         self.referenceView = view
         self.panAction = action
@@ -162,21 +162,21 @@ extension UIPanGestureRecognizer {
     /// This class is used as the target of the gesture recognizer action. It forwards the method call to the closure.
     internal class PanGestureHandler: NSObject {
         let action: PanAction
-            init(_ action: PanAction) {
+            init(_ action: @escaping PanAction) {
             self.action = action
         }
-            func handleGesture(gestureRecognizer: UIPanGestureRecognizer) {
+            func handleGesture(_ gestureRecognizer: UIPanGestureRecognizer) {
                 var locations = [Point]()
-                for i in 0..<gestureRecognizer.numberOfTouches() {
-                    locations.append(Point(gestureRecognizer.locationOfTouch(i, inView: gestureRecognizer.referenceView)))
+                for i in 0..<gestureRecognizer.numberOfTouches {
+                    locations.append(Point(gestureRecognizer.location(ofTouch: i, in: gestureRecognizer.referenceView)))
                 }
-                action(locations: locations, center: gestureRecognizer.location, translation: gestureRecognizer.translation, velocity: gestureRecognizer.velocity, state: gestureRecognizer.state)
+                action(locations, gestureRecognizer.location, gestureRecognizer.translation, gestureRecognizer.velocity, gestureRecognizer.state)
         }
     }
 }
 
 
-public typealias PinchAction = (scale: Double, velocity: Double, state: UIGestureRecognizerState) -> ()
+public typealias PinchAction = (_ scale: Double, _ velocity: Double, _ state: UIGestureRecognizerState) -> ()
 
 extension UIPinchGestureRecognizer {
     /// The closure to call when there is a gesture event.
@@ -186,17 +186,17 @@ extension UIPinchGestureRecognizer {
         }
         set {
             if let handler: AnyObject = actionHandler {
-                removeTarget(handler, action: "handleGesture:")
+                removeTarget(handler, action: #selector(PinchGestureHandler.handleGesture(_:)))
             }
                     if let action = newValue {
                 actionHandler = PinchGestureHandler(action)
-                addTarget(actionHandler!, action: "handleGesture:")
+                addTarget(actionHandler!, action: #selector(PinchGestureHandler.handleGesture(_:)))
             } else {
                 actionHandler = nil
             }
         }
     }
-    internal convenience init(view: UIView, action: PinchAction) {
+    internal convenience init(view: UIView, action: @escaping PinchAction) {
         self.init()
         self.referenceView = view
         self.pinchAction = action
@@ -204,17 +204,17 @@ extension UIPinchGestureRecognizer {
     /// This class is used as the target of the gesture recognizer action. It forwards the method call to the closure.
     internal class PinchGestureHandler: NSObject {
         let action: PinchAction
-            init(_ action: PinchAction) {
+            init(_ action: @escaping PinchAction) {
             self.action = action
         }
-            func handleGesture(gestureRecognizer: UIPinchGestureRecognizer) {
-            action(scale: Double(gestureRecognizer.scale), velocity: Double(gestureRecognizer.velocity), state: gestureRecognizer.state)
+            func handleGesture(_ gestureRecognizer: UIPinchGestureRecognizer) {
+            action(Double(gestureRecognizer.scale), Double(gestureRecognizer.velocity), gestureRecognizer.state)
         }
     }
 }
 
 
-public typealias RotationAction = (rotation: Double, velocity: Double, state: UIGestureRecognizerState) -> ()
+public typealias RotationAction = (_ rotation: Double, _ velocity: Double, _ state: UIGestureRecognizerState) -> ()
 
 extension UIRotationGestureRecognizer {
     /// The closure to call when there is a gesture event.
@@ -224,17 +224,17 @@ extension UIRotationGestureRecognizer {
         }
         set {
             if let handler: AnyObject = actionHandler {
-                removeTarget(handler, action: "handleGesture:")
+                removeTarget(handler, action: #selector(RotationGestureHandler.handleGesture(_:)))
             }
                     if let action = newValue {
                 actionHandler = RotationGestureHandler(action)
-                addTarget(actionHandler!, action: "handleGesture:")
+                addTarget(actionHandler!, action: #selector(RotationGestureHandler.handleGesture(_:)))
             } else {
                 actionHandler = nil
             }
         }
     }
-    internal convenience init(view: UIView, action: RotationAction) {
+    internal convenience init(view: UIView, action: @escaping RotationAction) {
         self.init()
         self.referenceView = view
         self.rotationAction = action
@@ -242,17 +242,17 @@ extension UIRotationGestureRecognizer {
     /// This class is used as the target of the gesture recognizer action. It forwards the method call to the closure.
     internal class RotationGestureHandler: NSObject {
         let action: RotationAction
-            init(_ action: RotationAction) {
+            init(_ action: @escaping RotationAction) {
             self.action = action
         }
-            func handleGesture(gestureRecognizer: UIRotationGestureRecognizer) {
-            action(rotation: Double(gestureRecognizer.rotation), velocity: Double(gestureRecognizer.velocity), state: gestureRecognizer.state)
+            func handleGesture(_ gestureRecognizer: UIRotationGestureRecognizer) {
+            action(Double(gestureRecognizer.rotation), Double(gestureRecognizer.velocity), gestureRecognizer.state)
         }
     }
 }
 
 
-public typealias LongPressAction = (locations: [Point], center: Point, state: UIGestureRecognizerState) -> ()
+public typealias LongPressAction = (_ locations: [Point], _ center: Point, _ state: UIGestureRecognizerState) -> ()
 
 extension UILongPressGestureRecognizer {
     /// The closure to call when there is a gesture event.
@@ -262,17 +262,17 @@ extension UILongPressGestureRecognizer {
         }
         set {
             if let handler: AnyObject = actionHandler {
-                removeTarget(handler, action: "handleGesture:")
+                removeTarget(handler, action: #selector(UITapGestureRecognizer.TapGestureHandler.handleGesture(_:)))
             }
                     if let action = newValue {
                 actionHandler = LongPressGestureHandler(action)
-                addTarget(actionHandler!, action: "handleGesture:")
+                addTarget(actionHandler!, action: #selector(UITapGestureRecognizer.TapGestureHandler.handleGesture(_:)))
             } else {
                 actionHandler = nil
             }
         }
     }
-    internal convenience init(view: UIView, action: LongPressAction) {
+    internal convenience init(view: UIView, action: @escaping LongPressAction) {
         self.init()
         self.referenceView = view
         self.longPressAction = action
@@ -280,21 +280,21 @@ extension UILongPressGestureRecognizer {
     /// This class is used as the target of the gesture recognizer action. It forwards the method call to the closure.
     internal class LongPressGestureHandler: NSObject {
         let action: LongPressAction
-            init(_ action: LongPressAction) {
+            init(_ action: @escaping LongPressAction) {
             self.action = action
         }
-            func handleGesture(gestureRecognizer: UILongPressGestureRecognizer) {
+            func handleGesture(_ gestureRecognizer: UILongPressGestureRecognizer) {
                 var locations = [Point]()
-                for i in 0..<gestureRecognizer.numberOfTouches() {
-                    locations.append(Point(gestureRecognizer.locationOfTouch(i, inView: gestureRecognizer.referenceView)))
+                for i in 0..<gestureRecognizer.numberOfTouches {
+                    locations.append(Point(gestureRecognizer.location(ofTouch: i, in: gestureRecognizer.referenceView)))
                 }
-                action(locations: locations, center: gestureRecognizer.location, state: gestureRecognizer.state)
+                action(locations, gestureRecognizer.location, gestureRecognizer.state)
         }
     }
 }
 
 
-public typealias SwipeAction = (locations: [Point], center: Point, state: UIGestureRecognizerState, direction: UISwipeGestureRecognizerDirection) -> ()
+public typealias SwipeAction = (_ locations: [Point], _ center: Point, _ state: UIGestureRecognizerState, _ direction: UISwipeGestureRecognizerDirection) -> ()
 
 extension UISwipeGestureRecognizer {
     /// The closure to call when there is a gesture event.
@@ -304,17 +304,17 @@ extension UISwipeGestureRecognizer {
         }
         set {
             if let handler: AnyObject = actionHandler {
-                removeTarget(handler, action: "handleGesture:")
+                removeTarget(handler, action: #selector(SwipeGestureHandler.handleGesture(_:)))
             }
                     if let action = newValue {
                 actionHandler = SwipeGestureHandler(action)
-                addTarget(actionHandler!, action: "handleGesture:")
+                addTarget(actionHandler!, action: #selector(SwipeGestureHandler.handleGesture(_:)))
             } else {
                 actionHandler = nil
             }
         }
     }
-    internal convenience init(view: UIView, action: SwipeAction) {
+    internal convenience init(view: UIView, action: @escaping SwipeAction) {
         self.init()
         self.referenceView = view
         self.swipeAction = action
@@ -322,20 +322,20 @@ extension UISwipeGestureRecognizer {
     /// This class is used as the target of the gesture recognizer action. It forwards the method call to the closure.
     internal class SwipeGestureHandler: NSObject {
         let action: SwipeAction
-            init(_ action: SwipeAction) {
+            init(_ action: @escaping SwipeAction) {
             self.action = action
         }
-            func handleGesture(gestureRecognizer: UISwipeGestureRecognizer) {
+            func handleGesture(_ gestureRecognizer: UISwipeGestureRecognizer) {
                 var locations = [Point]()
-                for i in 0..<gestureRecognizer.numberOfTouches() {
-                    locations.append(Point(gestureRecognizer.locationOfTouch(i, inView: gestureRecognizer.referenceView)))
+                for i in 0..<gestureRecognizer.numberOfTouches {
+                    locations.append(Point(gestureRecognizer.location(ofTouch: i, in: gestureRecognizer.referenceView)))
                 }
-                action(locations: locations, center: gestureRecognizer.location, state: gestureRecognizer.state, direction: gestureRecognizer.direction)
+                action(locations, gestureRecognizer.location, gestureRecognizer.state, gestureRecognizer.direction)
         }
     }
 }
 
-public typealias ScreenEdgePanAction = (location: Point, state: UIGestureRecognizerState) -> ()
+public typealias ScreenEdgePanAction = (_ location: Point, _ state: UIGestureRecognizerState) -> ()
 
 extension UIScreenEdgePanGestureRecognizer {
     /// The closure to call when there is a gesture event.
@@ -345,17 +345,17 @@ extension UIScreenEdgePanGestureRecognizer {
         }
         set {
             if let handler: AnyObject = actionHandler {
-                removeTarget(handler, action: "handleGesture:")
+                removeTarget(handler, action: #selector(PanGestureHandler.handleGesture(_:)))
             }
                     if let action = newValue {
                 actionHandler = ScreenEdgePanGestureHandler(action)
-                addTarget(actionHandler!, action: "handleGesture:")
+                addTarget(actionHandler!, action: #selector(PanGestureHandler.handleGesture(_:)))
             } else {
                 actionHandler = nil
             }
         }
     }
-    internal convenience init(view: UIView, action: ScreenEdgePanAction) {
+    internal convenience init(view: UIView, action: @escaping ScreenEdgePanAction) {
         self.init()
         self.referenceView = view
         self.screenEdgePanAction = action
@@ -364,11 +364,11 @@ extension UIScreenEdgePanGestureRecognizer {
     /// This class is used as the target of the gesture recognizer action. It forwards the method call to the closure.
     internal class ScreenEdgePanGestureHandler: NSObject {
         let action: ScreenEdgePanAction
-            init(_ action: ScreenEdgePanAction) {
+            init(_ action: @escaping ScreenEdgePanAction) {
             self.action = action
         }
-            func handleGesture(gestureRecognizer: UIScreenEdgePanGestureRecognizer) {
-            action(location: gestureRecognizer.location, state: gestureRecognizer.state)
+            func handleGesture(_ gestureRecognizer: UIScreenEdgePanGestureRecognizer) {
+            action(gestureRecognizer.location, gestureRecognizer.state)
         }
     }
 }

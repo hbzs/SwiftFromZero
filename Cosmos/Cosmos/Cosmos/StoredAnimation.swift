@@ -24,37 +24,36 @@ import UIKit
 /// A StoredAnimation object is able to apply a set of stored animation properties to an object.
 ///
 /// This class is useful for serializing and deserializing animations.
-public class StoredAnimation: Animation {
+open class StoredAnimation: Animation {
     /// A dictionary of keys whose values will be applied to animatable properties of the receiver. The keys should map directly to the names of animatable properies.
-    public var values = [String: AnyObject]()
+    open var values = [String: AnyObject]()
 
     /// Initiates the changes specified in the receivers `animations` block.
     /// - parameter object: An object to which the animations apply
-    public func animate(object: NSObject) {
+    open func animate(_ object: NSObject) {
         let disable = ShapeLayer.disableActions
         ShapeLayer.disableActions = false
         var timing: CAMediaTimingFunction
-        var options: UIViewAnimationOptions = [UIViewAnimationOptions.BeginFromCurrentState]
+        var options: UIViewAnimationOptions = [UIViewAnimationOptions.beginFromCurrentState]
 
         switch curve {
-        case .Linear:
-            options = [options, UIViewAnimationOptions.CurveLinear]
+        case .linear:
+            options = [options, UIViewAnimationOptions.curveLinear]
             timing = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
-        case .EaseOut:
-            options = [options, UIViewAnimationOptions.CurveEaseOut]
+        case .easeOut:
+            options = [options, UIViewAnimationOptions.curveEaseOut]
             timing = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
-        case .EaseIn:
-            options = [options, UIViewAnimationOptions.CurveEaseIn]
+        case .easeIn:
+            options = [options, UIViewAnimationOptions.curveEaseIn]
             timing = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
-        case .EaseInOut:
-            options = [options, UIViewAnimationOptions.CurveEaseInOut]
+        case .easeInOut:          
             timing = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
         }
 
-        autoreverses == true ? options.unionInPlace(.Autoreverse) : options.subtractInPlace(.Autoreverse)
-        repeatCount > 0 ? options.unionInPlace(.Repeat) : options.subtractInPlace(.Repeat)
+        autoreverses == true ? options.formUnion(.autoreverse) : options.subtract(.autoreverse)
+        repeatCount > 0 ? options.formUnion(.repeat) : options.subtract(.repeat)
 
-        UIView.animateWithDuration(duration, delay: 0, options: options, animations: {
+        UIView.animate(withDuration: duration, delay: 0, options: options, animations: {
             ViewAnimation.stack.append(self)
             UIView.setAnimationRepeatCount(Float(self.repeatCount))
             CATransaction.begin()

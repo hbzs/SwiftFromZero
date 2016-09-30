@@ -23,14 +23,14 @@ import CoreGraphics
 ///Line is a is a concrete subclass of Polygon that contains only two points.
 ///
 ///This subclass overrides the `points` variable so that it can only ever have 2 points, and also has an `endPoints` variable that allows the user to edit either end of the line (animatable).
-public class Line: Polygon {
+open class Line: Polygon {
 
     /// The end points the receiver's line. Animatable.
     ///
     /// Assigning a tuple of Point values to this object will cause the receiver to update itself.
     ///
     /// - returns: A tuple (2) of C4Points that make up the the begin and end points of the line.
-    public var endPoints: (Point, Point) = (Point(), Point(100, 0)) {
+    open var endPoints: (Point, Point) = (Point(), Point(100, 0)) {
         didSet {
             updatePath()
         }
@@ -51,7 +51,7 @@ public class Line: Polygon {
     /// The center point (top-left) of the receiver's frame. Animatable.
     ///
     /// - returns: A Point, the receiver's center.
-    public override var center: Point {
+    open override var center: Point {
         get {
             return Point(view.center)
         }
@@ -67,7 +67,7 @@ public class Line: Polygon {
     /// The origin point (top-left) of the receiver's frame. Animatable.
     ///
     /// - returns: A Point, the receiver's origin.
-    public override var origin: Point {
+    open override var origin: Point {
         get {
             return Point(view.frame.origin)
         }
@@ -85,7 +85,7 @@ public class Line: Polygon {
     /// Assigning an array of Point values to this object will cause the receiver to update itself.
     ///
     /// - returns: A Point array of 2 points.
-    public override var points: [Point] {
+    open override var points: [Point] {
         get {
             return [endPoints.0, endPoints.1]
         } set {
@@ -166,8 +166,8 @@ public class Line: Polygon {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private var pauseUpdates = false
-    func batchUpdates(updates: Void -> Void) {
+    fileprivate var pauseUpdates = false
+    func batchUpdates(_ updates: (Void) -> Void) {
         pauseUpdates = true
         updates()
         pauseUpdates = false
