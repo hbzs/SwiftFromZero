@@ -8,5 +8,6 @@
         <page name='Chapter 5 - Functions'/>
         <page name='Chapter 6 - Optionals'/>
         <page name='Chapter 7 - Arrays, Dictionaries, Sets'/>
+        <page name='Chapter 8 - Collection Iteration with Closures'/>
     </pages>
 </playground>
