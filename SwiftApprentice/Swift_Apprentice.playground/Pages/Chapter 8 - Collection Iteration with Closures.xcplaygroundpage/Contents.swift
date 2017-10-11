@@ -28,4 +28,108 @@ let adultNames = namesAndAges.filter({$0.value >= 18}).map {
 }
 print(adultNames)
 
+//: ### Challenges
+/*:
+ #### Challenge 1: Repeating yourself
+ 
+ Your ﬁrst challenge is to write a function that will run a given closure a given number of times.
+ 
+ Declare the function like so:
+ 
+ ```swift
+ func repeatTask(times: Int, task: () -> Void)
+ ```
+ 
+ The function should run the task closure, times number of times.
+ 
+ Use this function to print "Swift Apprentice is a great book!" 10 times.
+ */
+func repeatTask(times: Int, task: () -> Void) {
+    guard times > 0 else {
+        return
+    }
+    for _ in 0..<times {
+        task()
+    }
+}
+repeatTask(times: 10, task: {
+    print("Swift Apprentice is a great book!")
+})
+/*:
+ #### Challenge 2: Closure sums
+ 
+ In this challenge, you’re going to write a function that you can reuse to create different mathematical sums.
+ 
+ Declare the function like so:
+ 
+ ```swift
+ func mathSum(length: Int, series: (Int) -> Int) -> Int
+ ```
+ 
+ The ﬁrst parameter, length, deﬁnes the number of values to sum. The second parameter, series, is a closure that can be used to generate a series of values. series should have a parameter that is the position of the value in the series and return the value at that position.
+ 
+ mathSum should calculate length number of values, starting at position 1, and return their sum.
+ 
+ Use the function to ﬁnd the sum of the ﬁrst 10 square numbers, which equals 385. Then use the function to ﬁnd the sum of the ﬁrst 10 Fibonacci numbers, which equals 143. For the Fibonacci numbers, you can use the function you wrote in the functions chapter — or grab it from the solutions if you’re unsure your solution is correct.
+ */
+func mathSum(length: Int, series: (Int) -> Int) -> Int {
+    var sum = 0
+    for index in 1 ... length {
+        sum += series(index)
+    }
+    return sum
+}
+
+let squareSum = mathSum(length: 10, series: {
+    $0 * $0
+})
+print(squareSum)
+
+func fibonacci(_ num: Int) -> Int {
+    switch num {
+    case 1,2:
+        return 1
+    case let num where num > 2:
+        return fibonacci(num - 1) + fibonacci(num - 2)
+    default:
+        return 0
+    }
+}
+
+let fibonacciSum = mathSum(length: 10, series: {
+    fibonacci($0)
+})
+/*:
+ #### Challenge 3: Functional ratings
+ 
+ In this ﬁnal challenge, you will have a list of app names with associated ratings they’ve been given. Note — these are all ﬁctional apps!
+ 
+ Create the data dictionary like so:
+ 
+ ```swift
+ let appRatings = [
+     "Calendar Pro": [1, 5, 5, 4, 2, 1, 5, 4],
+     "The Messenger": [5, 4, 2, 5, 4, 1, 1, 2],
+     "Socialise": [2, 1, 2, 2, 1, 2, 4, 2]
+ ]
+ ```
+ 
+ First, create a dictionary called `averageRatings` which will contain a mapping of app names to average ratings. Use `forEach` to iterate through the `appRatings` dictionary, then use `reduce` to calculate the average rating and store this rating in the `averageRatings` dictionary.
+ 
+ Finally, use filter and map chained together to get a list of the app names whose average rating is greater than 3.
+ */
+let appRatings = [
+    "Calendar Pro": [1, 5, 5, 4, 2, 1, 5, 4],
+    "The Messenger": [5, 4, 2, 5, 4, 1, 1, 2],
+    "Socialise": [2, 1, 2, 2, 1, 2, 4, 2]
+]
+var averageRatings: [String : Double] = [:]
+appRatings.forEach {
+    let averageRatingNum = Double($0.value.reduce(0, +)) / Double($0.value.count)
+    averageRatings[$0.key] = averageRatingNum
+}
+print(averageRatings)
+let highScoreAppName = averageRatings.filter({$0.value > 3}).map { $0.key }
+print(highScoreAppName)
+
 //: [Next](@next)
